@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+from sys import argv
+#Rayan Ayouaz
+#BA3-INFO
+#000429095
+path = argv[1]
+file = open(path, "r")
+text = file.read()
+def parse_instance(text):
+    lines = text.split('\n')
+    if not lines[-1]:
+        lines = lines[0:len(lines)-1]
+    y_param = lines[0].split(" ")
+    panels = []
+    panels_number = []
+    try:
+        board_length = float(y_param[0])
+        board_card = int(y_param[1])
+    except ValueError:
+        print("Bad input error for boards parameters")
+    for i in range(1,len((lines))):
+        try:
+            panel_param = lines[i].split(" ")
+            panels.append(float(panel_param[0]))
+            panels_number.append(float(panel_param[1]))
+                
+        except ValueError:
+            print("Bad input at line", i+1)
+            break
+
+    return (board_length, board_card, panels, panels_number)
+            
+
+    
+def create_obj(board_card):
+    minimize = "Minimize\n  obj: " 
+    for i in range(board_card):
+        minimize += "y_" + str(i+1) + " + "
+
+    minimize = minimize[0:-3] + "\n"
+    return minimize
+
+
+def subject_to_board_size(board_card, panels, board_length):
+    text = ""
+    for i in range(board_card):
+        text += "   board_length_" + str(i+1) + ": "
+        for j in range(len(panels)):
+            text +=  str(panels[j]) +" x_" + str(i+1) + "_" + str(j+1)+ " + "
+        text = text[0:-3] + " - "+ str(board_length) + " y_" + str(i+1) + " <= 0 \n"
+    return text
+        
+
+
+def subject_to_all_panels(board_card,panels_number):
+    text = "" 
+    for j in range(len(panels_number)):
+        text += "   all_panels_" + str(j+1) + ": "
+        for i in range(board_card):
+            text += " x_" + str(i+1) + "_" + str(j+1)+ " + "
+        text = text[0:-3] + " = " + str(panels_number[j])+"\n"
+    return text
+
+
+def create_integers(board_card,panels):
+    text = ""
+    for i in range(board_card):
+        for j in range(len(panels)):
+            text+= "    x_" + str(i+1) + "_" +  str(j+1) + "\n"
+
+    return text
+
+def create_bounds(board_card,panels):
+    text = ""
+    for i in range(board_card):
+        for j in range(len(panels)):
+            text+= "    x_" + str(i+1) + "_" +  str(j+1) + " >= 0 \n"
+    return text
+        
+
+def create_binaries(board_card,panels):
+    text = ""
+    for i in range(board_card):
+        text+= "    y_" + str(i+1) + "\n"
+    return text
+        
+    
+board_length, board_card, panels, panels_number = parse_instance(text)
+print(create_obj(board_card) + "Subject To\n" + subject_to_board_size(board_card,panels,board_length) + subject_to_all_panels(board_card,panels_number)
+    + "Bounds\n" + create_bounds(board_card, panels) + "Integer\n" + create_integers(board_card, panels) + "Binary\n" + create_binaries(board_card, panels) + "End")
+
+
+
+
+
+
+
+
